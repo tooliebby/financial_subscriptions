@@ -2,6 +2,7 @@ import pytest
 from app import create_subscription, get_subscriptions, update_subscription, delete_subscription
 import psycopg2
 import json
+import os
 
 # Fixture для подключения к базе данных. Замените на свои данные!
 @pytest.fixture
