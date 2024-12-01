@@ -1,40 +1,71 @@
+import os
 from flask import Flask, request, jsonify
-from datetime import datetime
+import psycopg2
 
 app = Flask(__name__)
-subscriptions = []  # Список подписок
 
-# 1. Создание подписки
+# Получение данных подключения из переменных окружения
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+# Функция для получения соединения с базой данных
+def get_db_connection():
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        return conn
+    except psycopg2.Error as e:
+        print(f"Ошибка подключения к базе данных: {e}")
+        return None
+
+# ... (остальные функции) ...
+
 @app.route('/subscriptions', methods=['POST'])
 def create_subscription():
-    data = request.get_json()
-    subscription = {
-        'id': len(subscriptions) + 1,
-        'name': data['name'],
-        'amount': data['amount'],
-        'frequency': data['frequency'],
-        'start_date': data['start_date'],
-        'active': True
-    }
-    subscriptions.append(subscription)
-    return jsonify({'message': 'Подписка создана', 'subscription': subscription}), 201
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({'error': 'Ошибка подключения к базе данных'}), 500
+    try:
+        data = request.get_json()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO subscriptions (name, amount, frequency, start_date) VALUES (%s, %s, %s, %s) RETURNING id", (data['name'], data['amount'], data['frequency'], data['start_date']))
+        conn.commit()
+        new_subscription_id = cur.fetchone()[0]
+        cur.close()
+        conn.close()
+        return jsonify({'message': 'Подписка создана', 'id': new_subscription_id}), 201
+    except psycopg2.Error as e:
+        print(f"Ошибка выполнения запроса: {e}")
+        conn.rollback()
+        cur.close()
+        conn.close()
+        return jsonify({'error': 'Ошибка создания подписки'}), 500
 
-# 2. Просмотр подписок
 @app.route('/subscriptions', methods=['GET'])
 def get_subscriptions():
-    return jsonify({'subscriptions': [s for s in subscriptions if s['active']]}), 200
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({'error': 'Ошибка подключения к базе данных'}), 500
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM subscriptions WHERE active = TRUE")
+        subscriptions = cur.fetchall()
+        cur.close()
+        conn.close()
+        # Преобразуйте данные из базы данных в нужный формат JSON
+        formatted_subscriptions = format_db_results(subscriptions)
+        return jsonify({'subscriptions': formatted_subscriptions})
+    except psycopg2.Error as e:
+        print(f"Ошибка выполнения запроса: {e}")
+        conn.rollback()
+        cur.close()
+        conn.close()
+        return jsonify({'error': 'Ошибка получения подписок'}), 500
 
-# 3. Редактирование подписки
-@app.route('/subscriptions/<int:subscription_id>', methods=['PUT'])
-def update_subscription(subscription_id):
-    # ... (реализация обновления подписки по ID) ...
-    pass
+#Функция для форматирования результатов запроса к бд.
+def format_db_results(db_results):
+  #Преобразование данных из базы данных в JSON
+  return [{'id': row[0], 'name': row[1], 'amount': row[2], 'frequency': row[3], 'start_date': row[4]} for row in db_results]
 
-# 4. Удаление подписки
-@app.route('/subscriptions/<int:subscription_id>', methods=['DELETE'])
-def delete_subscription(subscription_id):
-    # ... (реализация удаления подписки по ID) ...
-    pass
+# ... (реализуйте update_subscription и delete_subscription аналогично, используя psycopg2) ...
 
 
 if __name__ == '__main__':
