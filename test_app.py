@@ -5,6 +5,8 @@ import json
 import os
 import requests
 
+from db import conn, cursor, router
+
 # Fixture для подключения к базе данных. Замените на свои данные!
 @pytest.fixture
 def db_connection():
