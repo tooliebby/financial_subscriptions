@@ -8,7 +8,8 @@ import os
 @pytest.fixture
 def db_connection():
     try:
-        conn = psycopg2.connect(os.environ.get("DATABASE_URL")) # Используйте отдельную переменную окружения для тестовой базы
+        # conn = psycopg2.connect(os.environ.get("DATABASE_URL")) # Используйте отдельную переменную окружения для тестовой базы
+        conn = psycopg2.connect(dbname="grit_tych_rpp_finance_bd", user="grit_tych_rpp_finance", password="123", host="127.0.0.1")
         conn.autocommit = True # Автоматическое подтверждение изменений в тестовой базе данных
         yield conn
         conn.close()
