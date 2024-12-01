@@ -16,4 +16,4 @@ echo "$commits" >> changelog.md
 
 # Добавляем ссылку на GitHub (адаптируйте под свой репозиторий)
 echo "" >> changelog.md
-echo "Полный лог изменений: [https://github.com/<your_username>/<your_repo>/commits/$version](https://github.com/<your_username>/<your_repo>/commits/$version)" >> changelog.md
+echo "Полный лог изменений: [https://github.com/tooliebby/financial_subscriptions/commits/$version](https://github.com/tooliebby/financial_subscriptions/commits/$version)" >> changelog.md
