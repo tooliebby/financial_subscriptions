@@ -6,31 +6,31 @@ on:
       - main
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: '3.9' # Или ваша версия Python
+          python-version: '3.9' # Или нужная вам версия
+
       - name: Install dependencies
         run: pip install -r requirements.txt
+
       - name: Run unit tests
         run: pytest # Предполагается, что у вас есть тесты
-      - name: Run security check (bandit)
-        run: bandit -r . # Проверка безопасности всего проекта
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: test # Зависит от успешного завершения test job
-    steps:
-      - uses: actions/checkout@v3
+      - name: Security check with bandit
+        run: bandit -r .
+
       - name: Generate changelog
         run: ./generate_changelog.sh
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
-          keep_files: true # Сохранение предыдущих файлов
+          publish_dir: ./ # Директория с changelog.md
