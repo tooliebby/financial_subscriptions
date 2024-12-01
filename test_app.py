@@ -18,16 +18,16 @@ def db_connection():
         print(f"Ошибка подключения к тестовой базе данных: {e}")
         pytest.fail(f"Ошибка подключения к тестовой базе данных: {e}")
 
-# def test_create_subscription(db_connection):
-#     cur = db_connection.cursor()
-#     data = {'name': 'Test Subscription', 'amount': 10.00, 'frequency': 'monthly', 'start_date': '2024-03-15'}
-#     response = create_subscription(data)
-#     assert response.status_code == 201
-#     assert response.json['message'] == 'Подписка создана'
-#     cur.execute("SELECT * FROM subscriptions WHERE name = %s", ('Test Subscription',))
-#     result = cur.fetchone()
-#     assert result is not None
-#     cur.close()
+def test_create_subscription(db_connection):
+    cur = db_connection.cursor()
+    data = {'name': 'Test Subscription', 'amount': 10.00, 'frequency': 'monthly', 'start_date': '2024-03-15'}
+    response = create_subscription(data)
+    assert response.status_code == 201
+    assert response.json['message'] == 'Подписка создана'
+    cur.execute("SELECT * FROM subscriptions WHERE name = %s", ('Test Subscription',))
+    result = cur.fetchone()
+    assert result is not None
+    cur.close()
 
 
 # def test_get_subscriptions(db_connection):
