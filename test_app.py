@@ -3,6 +3,7 @@ from app import create_subscription, get_subscriptions, update_subscription, del
 import psycopg2
 import json
 import os
+import requests
 
 # Fixture для подключения к базе данных. Замените на свои данные!
 @pytest.fixture
