@@ -5,12 +5,11 @@ import json
 
 app = Flask(__name__)
 
-# DATABASE_URL = os.environ.get("DATABASE_URL")
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 def get_db_connection():
     try:
-        # conn = psycopg2.connect(DATABASE_URL)
-        conn = psycopg2.connect(dbname="grit_tych_rpp_finance_bd", user="grit_tych_rpp_finance", password="123", host="127.0.0.1")
+        conn = psycopg2.connect(DATABASE_URL)
         return conn
     except psycopg2.Error as e:
         print(f"Database connection error: {e}")
