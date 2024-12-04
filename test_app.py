@@ -11,7 +11,8 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 @pytest.fixture
 def db_connection():
     try:
-        conn = psycopg2.connect(os.environ.get("DATABASE_URL")) 
+        # conn = psycopg2.connect(os.environ.get("DATABASE_URL")) 
+        conn = psycopg2.connect(DATABASE_URL)
         conn.autocommit = True # Автоматическое подтверждение изменений в тестовой базе данных
         yield conn
         conn.close()
