@@ -1,22 +1,114 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
-      - main
+      - main  # Запускать при каждом push в main
 
 jobs:
+  # Job для тестирования
   test:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v3
-      with:
-        python-version: 3.9
-    - name: Install dependencies
-      run: pip install -r requirements.txt
-    - name: Run tests
-      run: pytest
-    - name: Generate changelog
-      run: ./generate_changelog.sh
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10  # Укажите вашу версию Python
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # Убедитесь, что у вас есть файл requirements.txt
+
+      - name: Run unit tests
+        run: |
+          pytest  # Запуск тестов с использованием pytest
+
+  # Job для проверки безопасности с использованием Bandit
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: Install bandit
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit
+
+      - name: Run Bandit for security analysis
+        run: |
+          bandit -r . -o bandit_report.txt  # Запуск анализа безопасности
+
+      - name: Upload Bandit report as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: bandit-report
+          path: bandit_report.txt
+
+  # Job для генерации changelog
+  changelog:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Git
+        uses: actions/setup-git@v2
+
+      - name: Run changelog script
+        run: |
+          chmod +x ./generate_changelog.sh  # Сделать скрипт исполнимым
+          ./generate_changelog.sh  # Запуск вашего скрипта
+
+  # Job для публикации changelog на GitHub Pages
+  pages:
+    runs-on: ubuntu-latest
+    needs: changelog  # Зависят от выполнения job'а changelog
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build changelog for GitHub Pages
+        run: |
+          # Убедитесь, что changelog.md в нужной папке
+          cp changelog.md docs/  # Копирование changelog.md в папку docs
+
+      - name: Configure Git for GitHub Pages
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Commit and push changelog
+        run: |
+          git add docs/changelog.md
+          git commit -m "Update changelog"
+          git push origin main
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs  # Укажите каталог, куда публикуется changelog (например, docs)
