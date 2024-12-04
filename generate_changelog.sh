@@ -1,19 +1,35 @@
 #!/bin/bash
 
-# Получаем последний тег
-last_tag=$(git describe --tags --abbrev=0)
+# Убедимся, что скрипт выполняется в корневой директории git-репозитория.
+if [ ! -d ".git" ]; then
+  echo "Этот скрипт должен быть выполнен в корневой директории git-репозитория."
+  exit 1
+fi
 
-# Получаем коммиты с момента последнего тега
-commits=$(git log --pretty=format:"* %s [%h]" $last_tag..HEAD)
+# Получаем последний тег (релиз)
+LAST_TAG=$(git describe --tags --abbrev=0)
+if [ -z "$LAST_TAG" ]; then
+  echo "Не удалось найти последний тег (релиз)."
+  exit 1
+fi
 
-# Генерируем заголовок для changelog
-version=$(git describe --tags --always)
-date=$(date +%Y-%m-%d)
-echo "## $version - $date" >> changelog.md
+# Получаем текущую дату
+CURRENT_DATE=$(date +"%Y-%m-%d")
 
-# Добавляем коммиты в changelog
-echo "$commits" >> changelog.md
+# Получаем список всех коммитов с момента последнего тега
+COMMITS=$(git log "$LAST_TAG"..HEAD --pretty=format:"- %s [%h](https://github.com/your-username/your-repo/commit/%H)")
 
-# Добавляем ссылку на GitHub (адаптируйте под свой репозиторий)
-echo "" >> changelog.md
-echo "Полный лог изменений: [https://github.com/tooliebby/financial_subscriptions/commits/$version](https://github.com/tooliebby/financial_subscriptions/commits/$version)" >> changelog.md
+# Проверка, есть ли новые коммиты
+if [ -z "$COMMITS" ]; then
+  echo "Нет новых коммитов с момента последнего тега $LAST_TAG."
+  exit 0
+fi
+
+# Новый номер версии (здесь можно настроить автоинкремент, если нужно)
+VERSION="v$(echo $LAST_TAG | awk -F. -v OFS=. '{$NF++; print $0}')"
+
+# Создаем новый раздел в changelog.md
+echo "## $VERSION - $CURRENT_DATE" >> changelog.md
+echo "$COMMITS" >> changelog.md
+
+echo "Changelog обновлен с новой версией $VERSION."
