@@ -1,35 +1,23 @@
 #!/bin/bash
 
-# Убедимся, что скрипт выполняется в корневой директории git-репозитория.
-if [ ! -d ".git" ]; then
-  echo "Этот скрипт должен быть выполнен в корневой директории git-репозитория."
-  exit 1
-fi
+# Get the latest tag
+latest_tag=$(git describe --tags --abbrev=0)
+current_date=$(date +'%Y-%m-%d')
 
-# Получаем последний тег (релиз)
-LAST_TAG=$(git describe --tags --abbrev=0)
-if [ -z "$LAST_TAG" ]; then
-  echo "Не удалось найти последний тег (релиз)."
-  exit 1
-fi
+# Get commits since the last tag
+commits=$(git log ${latest_tag}..HEAD --oneline)
 
-# Получаем текущую дату
-CURRENT_DATE=$(date +"%Y-%m-%d")
+# Define changelog file
+changelog_file="changelog.md"
 
-# Получаем список всех коммитов с момента последнего тега
-COMMITS=$(git log "$LAST_TAG"..HEAD --pretty=format:"- %s [%h](https://github.com/your-username/your-repo/commit/%H)")
-
-# Проверка, есть ли новые коммиты
-if [ -z "$COMMITS" ]; then
-  echo "Нет новых коммитов с момента последнего тега $LAST_TAG."
-  exit 0
-fi
-
-# Новый номер версии (здесь можно настроить автоинкремент, если нужно)
-VERSION="v$(echo $LAST_TAG | awk -F. -v OFS=. '{$NF++; print $0}')"
-
-# Создаем новый раздел в changelog.md
-echo "## $VERSION - $CURRENT_DATE" >> changelog.md
-echo "$COMMITS" >> changelog.md
-
-echo "Changelog обновлен с новой версией $VERSION."
+# Add a new section to the changelog
+{
+  echo "## [v$(date +'%Y.%m.%d')] - $current_date"
+  echo
+  while IFS= read -r line; do
+    commit_hash=$(echo $line | awk '{print $1}')
+    commit_message=$(echo $line | sed -e "s/$commit_hash //")
+    echo "- $commit_message [\`$commit_hash\`](https://github.com/<OWNER>/<REPO>/commit/$commit_hash)"
+  done <<< "$commits"
+  echo
+} >> $changelog_file
