@@ -5,6 +5,7 @@ import json
 import os
 import requests
 
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 # Fixture для подключения к базе данных. Замените на свои данные!
 @pytest.fixture
