@@ -39,11 +39,11 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install bandit
+      - name: Install Bandit
         run: pip install bandit
 
-      - name: Run Bandit
-        run: bandit -r .  # Scan the entire repository
+      - name: Run Bandit Security Scan
+        run: bandit -r .  # Scan the project recursively
 
   # Job: Generate Changelog
   changelog:
@@ -52,24 +52,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
       - name: Run changelog script
         run: |
           chmod +x generate_changelog.sh
           ./generate_changelog.sh
 
-      - name: Save changelog
+      - name: Save Changelog
         run: |
-          mv changelog.md docs/
+          mv changelog.md docs/changelog.md
 
   # Job: Deploy to GitHub Pages
   deploy:
-    needs: changelog  # Ensure changelog is generated first
+    needs: changelog
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up GitHub Pages
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
