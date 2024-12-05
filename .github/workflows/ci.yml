@@ -42,6 +42,10 @@ jobs:
       - name: Run Unit Tests
         run: pytest
 
+      - name: Set up environment variables
+        run: |
+          echo "DATABASE_URL=postgresql://grit_tych_rpp_finance:123@localhost:5432/grit_tych_rpp_finance_bd" >> $GITHUB_ENV  
+
   # Job: Security Check with 
   security:
     runs-on: ubuntu-latest
