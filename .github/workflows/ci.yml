@@ -15,8 +15,8 @@ jobs:
           ports:
             - 5432:5432
           env:
-            POSTGRES_DB: grit_tych_finance_db
-            POSTGRES_USER: grit_tych_finance
+            POSTGRES_DB: grit_tych_rpp_finance_db
+            POSTGRES_USER: grit_tych_rpp_finance
             POSTGRES_PASSWORD: 123
           options: >-
             --health-cmd="pg_isready -U grit_tych_finance" 
