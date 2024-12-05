@@ -8,6 +8,22 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    
+    services:
+        postgres:
+          image: postgres:13
+          ports:
+            - 5432:5432
+          env:
+            POSTGRES_DB: grit_tych_finance_db
+            POSTGRES_USER: grit_tych_finance
+            POSTGRES_PASSWORD: 123
+          options: >-
+            --health-cmd="pg_isready -U grit_tych_finance" 
+            --health-interval=10s 
+            --health-timeout=5s 
+            --health-retries=5
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -82,3 +98,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs
+          
+
+  
