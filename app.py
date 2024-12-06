@@ -81,6 +81,11 @@ def delete_subscription(subscription_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+# Удалить, если не сработает 
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
+
 
 if __name__ == '__main__':
     app.run(debug=False)
