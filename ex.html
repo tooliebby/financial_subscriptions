@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .subscription-list {
+            margin-top: 20px;
+        }
+        .subscription-item {
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Subscription Manager</h1>
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" placeholder="Subscription Name">
+        </div>
+        <div class="form-group">
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" placeholder="Amount">
+        </div>
+        <div class="form-group">
+            <label for="frequency">Frequency</label>
+            <input type="text" id="frequency" placeholder="Frequency (e.g., monthly)">
+        </div>
+        <div class="form-group">
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date">
+        </div>
+        <button onclick="createSubscription()">Create Subscription</button>
+        <div class="subscription-list" id="subscription-list"></div>
+    </div>
+
+    <script>
+        async function createSubscription() {
+            const name = document.getElementById('name').value;
+            const amount = document.getElementById('amount').value;
+            const frequency = document.getElementById('frequency').value;
+            const start_date = document.getElementById('start_date').value;
+
+            const response = await fetch('/subscriptions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, amount, frequency, start_date }),
+            });
+
+            const result = await response.json();
+            alert(result.message);
+            loadSubscriptions();
+        }
+
+        async function loadSubscriptions() {
+            const response = await fetch('/subscriptions');
+            const subscriptions = await response.json();
+            const list = document.getElementById('subscription-list');
+            list.innerHTML = '';
+
+            subscriptions.forEach(sub => {
+                const item = document.createElement('div');
+                item.className = 'subscription-item';
+                item.innerHTML = `
+                    <strong>${sub.name}</strong> - ${sub.amount} (${sub.frequency}) 
+                    <button onclick="deleteSubscription(${sub.id})">Delete</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        async function deleteSubscription(id) {
+            const response = await fetch(`/subscriptions/${id}`, {
+                method: 'DELETE',
+            });
+
+            const result = await response.json();
+            alert(result.message);
+            loadSubscriptions();
+        }
+
+        // Load subscriptions on page load
+        window.onload = loadSubscriptions;
+    </script>
+</body>
+</html>
