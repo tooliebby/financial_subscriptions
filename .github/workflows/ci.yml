@@ -64,11 +64,7 @@ jobs:
       - name: Run Bandit Security Scan
         run: bandit -r . --skip B106  # Scan the project recursively
         
-      - name: Extract Issue IDs
-        run: |
-          python -c "import json; print(json.load(open('bandit_results.json'))['results'])"
-          # Или, если нужно только ID:
-          # python -c "import json; results = json.load(open('bandit_results.json'))['results']; print('\n'.join([r['issue_id'] for r in results if 'issue_id' in r]))"
+      
   # Job: Generate Changelog
   # changelog:
   #   runs-on: ubuntu-latest
