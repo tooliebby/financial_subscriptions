@@ -1,0 +1,16 @@
+[
+    {
+        "id": 1,
+        "name": "Netflix",
+        "amount": 9.99,
+        "frequency": "monthly",
+        "start_date": "2023-01-01"
+    },
+    {
+        "id": 2,
+        "name": "Spotify",
+        "amount": 4.99,
+        "frequency": "monthly",
+        "start_date": "2023-02-01"
+    }
+]
