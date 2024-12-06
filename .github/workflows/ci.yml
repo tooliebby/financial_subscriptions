@@ -65,11 +65,37 @@ jobs:
         run: bandit -r .  # Scan the project recursively
 
   # Job: Generate Changelog
+  # changelog:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: '3.9'
+
+  #     - name: Generate Changelog
+  #       run: |
+  #         chmod +x generate_changelog.sh
+  #         ./generate_changelog.sh
+
+  #     - name: Create docs directory if not exists
+  #       run: |
+  #         mkdir -p docs
+
+  #     - name: Save Changelog
+  #       run: |
+  #         mv changelog.md docs/changelog.md
+
   changelog:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Get all history
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -81,27 +107,33 @@ jobs:
           chmod +x generate_changelog.sh
           ./generate_changelog.sh
 
-      - name: Create docs directory if not exists
+      - name: Add changelog to git
         run: |
-          mkdir -p docs
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Actions"
+          git add changelog.md
+          git commit -m "Update changelog" --allow-empty
 
-      - name: Save Changelog
-        run: |
-          mv changelog.md docs/changelog.md
-
-  # Job: Deploy to GitHub Pages
-  deploy:
-    needs: changelog
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Push to gh-pages
+        uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
+          branch: gh-pages
+          force: true
+
+  # Job: Deploy to GitHub Pages
+  # deploy:
+  #   needs: changelog
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+
+  #     - name: Deploy to GitHub Pages
+  #       uses: peaceiris/actions-gh-pages@v3
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #         publish_dir: ./docs
           
 
   
